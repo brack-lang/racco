@@ -2,6 +2,7 @@ import brack
 initBrack()
 
 import std/os
+import std/times
 import std/strformat
 import std/strutils
 import std/sequtils
@@ -17,10 +18,12 @@ include "../scfs/article.html.nimf"
 include "../scfs/daily.html.nimf"
 
 proc build* () =
-  let currentDir = getCurrentDir()
+  let
+    currentDir = getCurrentDir()
+    appDir = getAppDir()
   createDir(currentDir / "dist")
-  os.copyFile("./src/css/style.css", currentDir / "dist/style.css")
-  os.copyDir("./src/assets/", currentDir / "dist/assets/")
+  os.copyFile(appDir / "css/style.css", currentDir / "dist/style.css")
+  os.copyDir(appDir / "assets/", currentDir / "dist/assets/")
 
   var pages: seq[Page] = @[]
   for (dayInDir, year, month, day) in dateInDir(currentDir / "articles"):
@@ -111,3 +114,6 @@ proc build* () =
     outputFile.write(
       generateDailyIndexHtml(dailies.sorted.reversed)
     )
+
+  let now = now().format("yyyy-MM-dd HH:mm:ss")
+  echo &"[{now}] 🎉 Success to build!"

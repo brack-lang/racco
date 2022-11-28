@@ -49,6 +49,7 @@ proc newDaily (date: string = today()): int =
 
 proc preview () =
   var clients: seq[Request] = @[]
+  let currentDir = getCurrentDir()
   proc serve {.async.} =
     var server = newAsyncHttpServer()
     proc cb(req: Request) {.async.} =
@@ -60,7 +61,7 @@ proc preview () =
                     of "css": {"Content-type": "text/css; charset=utf-8"}
                     else: {"Content-type": "text/plain; charset=utf-8"}
       let html = block:
-        let f = open(getCurrentDir() / "dist" & req.url.path)
+        let f = open(currentDir / "dist" & req.url.path)
         defer: f.close()
         f.readAll
       await req.respond(Http200, html, headers.newHttpHeaders())
@@ -83,13 +84,13 @@ proc preview () =
     clients = @[]
 
   wd.add(
-    "../dailies",
+    currentDir / "dailies",
     "[\\w\\W]*\\.(\\[\\]|toml)",
     callback,
     "transpiled brack"
   )
   wd.add(
-    "../articles",
+    currentDir / "articles",
     "[\\w\\W]*\\.(\\[\\]|toml)",
     callback,
     "transpiled brack"
