@@ -68,7 +68,7 @@ proc preview () =
 
     server.listen(Port(3000))
     let port = server.getPort
-    echo "test this with: curl localhost:" & $port.uint16 & "/"
+    echo "Serve http://localhost:" & $port.uint16 & "/index.html"
     while true:
       if server.shouldAcceptRequest():
         await server.acceptRequest(cb)
