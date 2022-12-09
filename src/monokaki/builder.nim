@@ -1,5 +1,7 @@
 import brack
-initBrack()
+import brack/api
+initExpander(Html)
+initGenerator(Html)
 
 import std/os
 import std/times
@@ -36,7 +38,7 @@ proc build* () =
         tags = toml["blog"]["tags"].getElems().map(t => t.getStr())
         thumbnail = toml["blog"]["thumbnail"].getInt()
         published = toml["blog"]["published"].getBool()
-        page = (
+        page: Page = (
           title,
           overview,
           &"{year}-{month}-{day}",
