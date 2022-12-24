@@ -6,7 +6,7 @@ description   = "the blog generator and manager"
 license       = "Apache-2.0"
 srcDir        = "src"
 binDir        = "bin"
-bin           = @["monokaki"]
+bin           = @["racco"]
 
 
 # Dependencies
