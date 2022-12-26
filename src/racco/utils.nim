@@ -10,6 +10,7 @@ type
     href: string
     thumbnail: string
     tags: seq[string]
+    published: bool
 
 func cmpPage (x, y: Page): int =
   result = system.cmp(x.date, y.date)

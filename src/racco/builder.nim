@@ -1,9 +1,5 @@
-import brack
-import brack/api
+import env
 import racco
-
-initExpander(Html)
-initGenerator(Html)
 
 import std/os
 import std/times
@@ -16,12 +12,17 @@ import std/sugar
 import utils
 import parsetoml
 
+import brack
+import brack/api
+initExpander(Html)
+initGenerator(Html)
+
 include "../scfs/index.html.nimf"
 include "../scfs/daily_index.html.nimf"
 include "../scfs/article.html.nimf"
 include "../scfs/daily.html.nimf"
 
-proc build* () =
+proc build* (env: EnvKind) =
   let
     currentDir = getCurrentDir()
     appDir = getAppDir()
@@ -46,10 +47,11 @@ proc build* () =
           &"{year}-{month}-{day}",
           &"{year}/{month}/{day}/{name}.html",
           &"{thumbnail}.png",
-          tags
+          tags,
+          published
         )
-
-      if not published:
+      
+      if env == ekProduction and (not published):
         continue
 
       block:
@@ -81,10 +83,11 @@ proc build* () =
         &"{year}-{month}-{day}",
         &"{year}/{month}/{day}/daily.html",
         &"{thumbnail}.png",
-        @[]
+        @[],
+        published
       )
-    
-    if not published:
+
+    if env == ekProduction and (not published):
       continue
 
     block:

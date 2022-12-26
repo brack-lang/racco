@@ -9,6 +9,7 @@ import std/json
 import nwatchdog
 
 import racco/builder
+import racco/env
 
 include "scfs/article.settings.toml.nimf"
 include "scfs/daily.settings.toml.nimf"
@@ -47,10 +48,10 @@ proc newDaily (date: string = today()): int =
     setting.write(dailySettingsToml(rand(1..16)))
     setting.close()
 
-proc buildBlog (): int =
-  builder.build()
+proc buildBlog (env: EnvKind = ekUser): int =
+  builder.build(env)
 
-proc preview () =
+proc preview (env: EnvKind = ekUser) =
   var clients: seq[Request] = @[]
   let currentDir = getCurrentDir()
   discard buildBlog()
@@ -81,7 +82,7 @@ proc preview () =
 
   let wd = NWatchDog[string](interval: 100)
   proc callback (file: string, evt: NWatchEvent, param: string) {.gcsafe async.} =
-    build()
+    build(env)
     for client in clients:
       let headers = {"Content-type": "application/json; charset=utf-8"}
       await client.respond(Http200, $(%*{ "status": "ok" }), headers.newHttpHeaders())

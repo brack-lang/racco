@@ -38,6 +38,11 @@
             <a href="$page.href">
               <img class="articleCard__thumbnail" alt="no image of the article" src="./assets/$page.thumbnail" />
               <div class="articleCard__body">
+                # if not page.published:
+                  <div class="articleCard__draft">
+                    <span>下書き</span>
+                  </div>
+                # end if
                 <h3 class="articleCard__body--title">
                   $page.title
                 </h3>
