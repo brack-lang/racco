@@ -3,13 +3,11 @@ import std/times
 import std/strformat
 import std/strutils
 import std/random
-import std/asyncdispatch
-import std/asynchttpserver
 import std/json
-import nwatchdog
 
-import racco/builder
+import racco/builds
 import racco/env
+import racco/previews
 
 include "scfs/article.settings.toml.nimf"
 include "scfs/daily.settings.toml.nimf"
@@ -48,67 +46,11 @@ proc newDaily (date: string = today()): int =
     setting.write(dailySettingsToml(rand(1..16)))
     setting.close()
 
-proc buildBlog (env: EnvKind = ekUser): int =
-  builder.build(env)
+proc buildCommand (env: EnvKind = ekUser): int =
+  build(env)
 
-proc preview (env: EnvKind = ekUser) =
-  var clients: seq[Request] = @[]
-  let currentDir = getCurrentDir()
-  discard buildBlog()
-  proc serve {.async.} =
-    var server = newAsyncHttpServer()
-    proc cb(req: Request) {.async.} =
-      if req.url.path == "/poll":
-        clients.add req
-        return
-      let headers = case $req.url.path.split('.')[^1]
-                    of "html": {"Content-type": "text/html; charset=utf-8"}
-                    of "css": {"Content-type": "text/css; charset=utf-8"}
-                    else: {"Content-type": "text/plain; charset=utf-8"}
-      let html = block:
-        let f = open(currentDir / "dist" & req.url.path)
-        defer: f.close()
-        f.readAll
-      await req.respond(Http200, html, headers.newHttpHeaders())
-
-    var port = 3000
-    while true:
-      try:
-        server.listen(Port(port))
-        break
-      except OSError:
-        echo &"Port {port} already in use"
-        port += 1
-
-    echo "Serve http://localhost:" & $port.uint16 & "/index.html"
-    while true:
-      if server.shouldAcceptRequest():
-        await server.acceptRequest(cb)
-      else:
-        await sleepAsync(500)
-
-  let wd = NWatchDog[string](interval: 100)
-  proc callback (file: string, evt: NWatchEvent, param: string) {.gcsafe async.} =
-    build(env)
-    for client in clients:
-      let headers = {"Content-type": "application/json; charset=utf-8"}
-      await client.respond(Http200, $(%*{ "status": "ok" }), headers.newHttpHeaders())
-    clients = @[]
-
-  wd.add(
-    currentDir / "dailies",
-    "[\\w\\W]*\\.(\\[\\]|toml)",
-    callback,
-    "transpiled brack"
-  )
-  wd.add(
-    currentDir / "articles",
-    "[\\w\\W]*\\.(\\[\\]|toml)",
-    callback,
-    "transpiled brack"
-  )
-
-  waitFor serve() and wd.watch
+proc previewCommand (env: EnvKind = ekUser): int =
+  preview(env)
 
 when isMainModule:
   import cligen
@@ -116,6 +58,6 @@ when isMainModule:
   dispatchMulti(
     [newArticle, cmdName = "new:article"],
     [newDaily, cmdName = "new:daily"],
-    [preview],
-    [buildBlog, cmdName = "build"]
+    [previewCommand, cmdName = "preview"],
+    [buildCommand, cmdName = "build"]
   )
