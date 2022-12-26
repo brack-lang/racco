@@ -164,10 +164,6 @@ footer small {
   justify-content: center;
 }
 
-.dailyCards .articleCard__thumbnail {
-  height: 55%;
-}
-
 .new-article {
   width: 80%;
   margin: 36px 10% 20px;
@@ -220,8 +216,15 @@ footer small {
   max-width: 80%;
   background-color: white;
   margin: 12px 20px;
-  height: 320px;
   position: relative;
+}
+
+.articleCards .articleCard {
+  height: 320px;
+}
+
+.dailyCards .articleCard {
+  height: 280px;
 }
 
 .articleCard a {
@@ -245,6 +248,10 @@ footer small {
   top: 0; left: 0;
 }
 
+.dailyCards .articleCard__thumbnail {
+  height: 55%;
+}
+
 .articleCard__body--title {
   position: absolute;
   font-weight: 400;
@@ -256,6 +263,10 @@ footer small {
   padding: 0;
 }
 
+.dailyCards .articleCard__body--title {
+  top: 60%;
+}
+
 .articleCard__body--overview {
   margin: 0;
   padding: 0;
@@ -263,6 +274,10 @@ footer small {
   position: absolute;
   top: 62%;
   left: 20px;
+}
+
+.dailyCards .articleCard__body--overview {
+  top: 72%;
 }
 
 .articleCard__body--tags {
