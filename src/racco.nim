@@ -71,8 +71,15 @@ proc preview (env: EnvKind = ekUser) =
         f.readAll
       await req.respond(Http200, html, headers.newHttpHeaders())
 
-    server.listen(Port(3000))
-    let port = server.getPort
+    var port = 3000
+    while true:
+      try:
+        server.listen(Port(port))
+        break
+      except OSError:
+        echo &"Port {port} already in use"
+        port += 1
+
     echo "Serve http://localhost:" & $port.uint16 & "/index.html"
     while true:
       if server.shouldAcceptRequest():
