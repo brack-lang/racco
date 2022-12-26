@@ -47,9 +47,13 @@ proc newDaily (date: string = today()): int =
     setting.write(dailySettingsToml(rand(1..16)))
     setting.close()
 
+proc buildBlog (): int =
+  builder.build()
+
 proc preview () =
   var clients: seq[Request] = @[]
   let currentDir = getCurrentDir()
+  discard buildBlog()
   proc serve {.async.} =
     var server = newAsyncHttpServer()
     proc cb(req: Request) {.async.} =
@@ -97,9 +101,6 @@ proc preview () =
   )
 
   waitFor serve() and wd.watch
-
-proc buildBlog (): int =
-  builder.build()
 
 when isMainModule:
   import cligen
