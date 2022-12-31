@@ -56,8 +56,9 @@ proc build* (env: EnvKind) =
 
       block:
         createDir(currentDir / &"dist/{year}/{month}/{day}/")
-        for assets in walkFiles(dir.path / "assets"):
-          copyFile(assets, currentDir / &"dist/{year}/{month}/{day}/")
+        for assets in walkDir(dir.path / "assets/"):
+          let name = $assets.path.split('/')[^1]
+          copyFile(assets.path, currentDir / &"dist/{year}/{month}/{day}/{name}")
         var outputFile = open(currentDir / &"dist/{year}/{month}/{day}/{name}.html", FileMode.fmWrite)
         defer: outputFile.close()
         let parsed = tokenize(dir.path / "index.[]").parse()
