@@ -13,8 +13,7 @@ include "scfs/article.settings.toml.nimf"
 include "scfs/xly.settings.toml.nimf"
 
 proc today (): string =
-  let now = now()
-  result = &"{$now.year}-{$(now.month.int)}-{$now.monthday}"
+  result = now().format("yyyy-MM-dd")
 
 proc splitDate (date: string): tuple[year: string, month: string, day: string] =
   let s = date.split("-")
@@ -49,7 +48,20 @@ proc newDaily (date: string = today()): int =
 proc newWeekly (date: string = today()): int =
   let
     (year, month, day) = splitDate(date)
-    path = &"{getCurrentDir()}/weeklies/{year}/{month}/{day}"
+    weekNo = day.parseInt div 7 + 1
+    path = &"{getCurrentDir()}/weeklies/{year}/{month}/week0{weekNo}"
+  createDir(path)
+  block:
+    var brack = open(&"{path}/index.[]", fmReadWrite)
+    brack.close()
+  block:
+    var setting = open(&"{path}/settings.toml", fmReadWrite)
+    setting.write(xlySettingsToml(rand(1..16)))
+
+proc newMonthly (date: string = today()): int =
+  let
+    (year, month, _) = splitDate(date)
+    path = &"{getCurrentDir()}/monthlies/{year}/{month}"
   createDir(path)
   block:
     var brack = open(&"{path}/index.[]", fmReadWrite)
@@ -71,6 +83,7 @@ when isMainModule:
     [newArticle, cmdName = "new:article"],
     [newDaily, cmdName = "new:daily"],
     [newWeekly, cmdName = "new:weekly"],
+    [newMonthly, cmdName = "new:monthly"],
     [previewCommand, cmdName = "preview"],
     [buildCommand, cmdName = "build"]
   )

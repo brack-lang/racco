@@ -72,31 +72,83 @@ proc buildArticles (env: EnvKind): seq[Page] =
         )
         result.add article
 
-proc initXly (dir: Path, env: EnvKind, year, month, day: string, kind: XlyKind): Option[Page] =
-  let
-    toml = parsetoml.parseFile(dir.path / "settings.toml")
-    overview = toml["blog"]["overview"].getStr()
-    thumbnail = toml["blog"]["thumbnail"].getInt()
-    published = toml["blog"]["published"].getBool()
+proc parseSettings (path: string): tuple[overview: string, thumbnail: int, published: bool] =
+  let toml = parsetoml.parseFile(path)
+  result.overview = toml["blog"]["overview"].getStr()
+  result.thumbnail = toml["blog"]["thumbnail"].getInt()
+  result.published = toml["blog"]["published"].getBool()
+
+proc initPage (name, overview, date, href, thumbnail: string, tags: seq[string], published: bool, env: EnvKind): Option[Page] =
   if env == ekProduction and (not published):
     result = none[Page]()
   else:
-    result = some((&"{year}.{month}.{day}", overview, &"{year}-{month}-{day}", &"{year}/{month}/{day}/{$kind}.html", &"{thumbnail}.png", newSeq[string](), published))
+    result = some((name, overview, date, href, thumbnail, tags, published))
 
-proc buildXlies (env: EnvKind, kind: XlyKind): seq[Page] =
+proc initDaily (dir: Path, env: EnvKind, year, month, day: string): Option[Page] =
+  let
+    (overview, thumbnail, published) = parseSettings(dir.path / "settings.toml")
+    name = &"{year}.{month}.{day}"
+  result = initPage(name, overview, &"{year}-{month}-{day}", &"{year}/{month}/{day}/daily.html", &"{thumbnail}.png", newSeq[string](), published, env)
+
+proc initWeekly (dir: Path, env: EnvKind, year, month: string, weekNo: int): Option[Page] =
+  let
+    (overview, thumbnail, published) = parseSettings(dir.path / "settings.toml")
+    name = &"{year}.{month} Week0{weekNo}"
+    day = if weekNo < 3: $((weekNo+1) * 7)
+          else: $getDaysInMonth(Month(month.parseInt), year.parseInt)
+  result = initPage(name, overview, &"{year}-{month}-{day}", &"{year}/{month}/week0{weekNo}/weekly.html", &"{thumbnail}.png", newSeq[string](), published, env)
+
+proc initMonthly (dir: Path, env: EnvKind, year, month: string): Option[Page] =
+  let
+    (overview, thumbnail, published) = parseSettings(dir.path / "settings.toml")
+    name = &"{year}.{month} ふりかえり"
+    day = getDaysInMonth(Month(month.parseInt), year.parseInt)
+  result = initPage(name, overview, &"{year}-{month}-{day}", &"{year}/{month}/monthly.html", &"{thumbnail}.png", newSeq[string](), published, env)
+
+proc buildDailes (env: EnvKind): seq[Page] =
   let currentDir = getCurrentDir()
-  for (dir, year, month, day) in dateInDir(currentDir / kind.toPlural):
-    let xly = initXly(dir, env, year, month, day, kind)
-    if Some(@xly) ?= xly:
-      createDir(currentDir / &"dist/{$kind}/{year}/{month}/{day}/")
+  for (dir, year, month, day) in dateInDir(currentDir / "dailies"):
+    let daily = initDaily(dir, env, year, month, day)
+    if Some(@daily) ?= daily:
+      createDir(currentDir / &"dist/daily/{year}/{month}/{day}/")
       for assets in walkDir(dir.path / "assets/"):
         let name = $assets.path.split('/')[^1]
-        copyFile(assets.path, currentDir / &"dist/{$kind}/{year}/{month}/{day}/{name}")
-      var outputFile = open(currentDir / &"dist/{$kind}/{year}/{month}/{day}/{$kind}.html", FileMode.fmWrite)
+        copyFile(assets.path, currentDir / &"dist/daily/{year}/{month}/{day}/{name}")
+      var outputFile = open(currentDir / "dist/daily" / daily.href, FileMode.fmWrite)
       defer: outputFile.close()
       let parsed = tokenize(dir.path & "/index.[]").parse()
-      outputFile.write(generateXlyHtml(parsed.expand().generate(), xly, kind))
-      result.add xly
+      outputFile.write(generateXlyHtml(parsed.expand().generate(), daily, xkDaily))
+      result.add daily
+
+proc buildWeeklies (env: EnvKind): seq[Page] =
+  let currentDir = getCurrentDir()
+  for (dir, year, month, weekNo) in walkWeeklies(currentDir / "weeklies"):
+    let weekly = initWeekly(dir, env, year, month, weekNo)
+    if Some(@weekly) ?= weekly:
+      createDir(currentDir / &"dist/weekly/{year}/{month}/week0{weekNo}/")
+      for assets in walkDir(dir.path / "assets/"):
+        let name = $assets.path.split('/')[^1]
+        copyFile(assets.path, currentDir / &"dist/weekly/{year}/{month}/week0{weekNo}/{name}")
+      var outputFile = open(currentDir / "dist/weekly" / weekly.href, FileMode.fmWrite)
+      defer: outputFile.close()
+      let parsed = tokenize(dir.path & "/index.[]").parse()
+      outputFile.write(generateXlyHtml(parsed.expand().generate(), weekly, xkWeekly))
+      result.add weekly
+
+proc buildMonthlies (env: EnvKind): seq[Page] =
+  let currentDir = getCurrentDir()
+  for (dir, year, month) in walkMonthlies(currentDir / "monthlies"):
+    let weekly = initMonthly(dir, env, year, month)
+    if Some(@weekly) ?= weekly:
+      createDir(currentDir / &"dist/monthly/{year}/{month}/")
+      for assets in walkDir(dir.path / "assets/"):
+        let name = $assets.path.split('/')[^1]
+        copyFile(assets.path, currentDir / &"dist/monthly/{year}/{month}/{name}")
+      var outputFile = open(currentDir / "dist/monthly" / weekly.href, FileMode.fmWrite)
+      defer: outputFile.close()
+      let parsed = tokenize(dir.path & "/index.[]").parse()
+      outputFile.write(generateXlyHtml(parsed.expand().generate(), weekly, xkWeekly))
+      result.add weekly
 
 proc build* (env: EnvKind) =
   let
@@ -108,9 +160,9 @@ proc build* (env: EnvKind) =
 
   let
     articles = buildArticles(env)
-    dailies = buildXlies(env, xkDaily)
-    weeklies = buildXlies(env, xkWeekly)
-    monthlies = buildXlies(env, xkMonthly)
+    dailies = buildDailes(env)
+    weeklies = buildWeeklies(env)
+    monthlies = buildMonthlies(env)
 
   block:
     var outputFile = open(currentDir / &"dist/index.html", FileMode.fmWrite)
