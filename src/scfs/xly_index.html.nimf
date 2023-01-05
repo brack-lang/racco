@@ -1,5 +1,5 @@
 #? stdtmpl(subsChar = '$', metaChar = '#')
-#proc generateDailyIndexHtml(pages: seq[Page]): string =
+#proc generateXliesIndexHtml(pages: seq[Page], kind: XlyKind): string =
 #  result = ""
 
 <!DOCTYPE html>
@@ -28,11 +28,11 @@
       <div class="new-article">
         <span style="background: #eee; padding: 0 20px; font-size: 18px;">
           <i class="fas fa-kiwi-bird" style="margin-right: 8px;"></i>
-          新しい日報
+          新しい投稿
         </span>
       </div>
       <div>
-        <div class="dailyCards">
+        <div class="${kind}Cards">
         #for page in pages:
           <div class="articleCard">
             <a href="$page.href">
@@ -58,6 +58,15 @@
       <footer>
         <div>
           <a href="../index.html">記事一覧</a> | 
+          # if not (kind == xkDaily):
+            <a href="../daily/index.html">日報一覧</a> | 
+          # end if
+          # if not (kind == xkWeekly):
+            <a href="../weekly/index.html">週報一覧</a> | 
+          # end if
+          # if not (kind == xkMonthly):
+            <a href="../monthly/index.html">月報一覧</a> | 
+          # end if
           <a href="https://github.com/momeemt/blog.momee.mt" target="_blank">source</a>
         </div>
         <small>&copy; 2022 Mutsuha Asada</small>
