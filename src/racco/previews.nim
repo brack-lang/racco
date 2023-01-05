@@ -69,6 +69,18 @@ proc preview* (env: EnvKind = ekUser) =
     "transpiled brack"
   )
   wd.add(
+    currentDir / "weeklies",
+    r"[\w\W]*\.(\[\]|toml)",
+    callback,
+    "transpiled brack"
+  )
+  wd.add(
+    currentDir / "monthlies",
+    r"[\w\W]*\.(\[\]|toml)",
+    callback,
+    "transpiled brack"
+  )
+  wd.add(
     currentDir / "articles",
     r"[\w\W]*\.(\[\]|toml)",
     callback,

@@ -10,7 +10,7 @@ import racco/env
 import racco/previews
 
 include "scfs/article.settings.toml.nimf"
-include "scfs/daily.settings.toml.nimf"
+include "scfs/xly.settings.toml.nimf"
 
 proc today (): string =
   let now = now()
@@ -43,8 +43,20 @@ proc newDaily (date: string = today()): int =
     brack.close()
   block:
     var setting = open(&"{path}/settings.toml", fmReadWrite)
-    setting.write(dailySettingsToml(rand(1..16)))
+    setting.write(xlySettingsToml(rand(1..16)))
     setting.close()
+
+proc newWeekly (date: string = today()): int =
+  let
+    (year, month, day) = splitDate(date)
+    path = &"{getCurrentDir()}/weeklies/{year}/{month}/{day}"
+  createDir(path)
+  block:
+    var brack = open(&"{path}/index.[]", fmReadWrite)
+    brack.close()
+  block:
+    var setting = open(&"{path}/settings.toml", fmReadWrite)
+    setting.write(xlySettingsToml(rand(1..16)))
 
 proc buildCommand (env: EnvKind = ekUser): int =
   build(env)
@@ -58,6 +70,7 @@ when isMainModule:
   dispatchMulti(
     [newArticle, cmdName = "new:article"],
     [newDaily, cmdName = "new:daily"],
+    [newWeekly, cmdName = "new:weekly"],
     [previewCommand, cmdName = "preview"],
     [buildCommand, cmdName = "build"]
   )
