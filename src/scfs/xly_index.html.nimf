@@ -44,7 +44,7 @@
         # elif kind == xkWeekly:
           目標: 16時にお布団に入らない
         # else:
-          記憶が続かないので2週に1回のゴミ回収をやめてほしい
+          10時くらいに朝ごはんを食べて昼ごはんを食べ逃し続ける
         # end if
       </p>
       <div class="new-article">
@@ -103,7 +103,7 @@
           # end if
           <a href="https://github.com/momeemt/blog.momee.mt" target="_blank">source</a>
         </div>
-        <small>&copy; 2022 Mutsuha Asada</small>
+        <small>&copy; 2023 Mutsuha Asada</small>
       </footer>
     </div>
     <script>
