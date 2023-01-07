@@ -1,5 +1,5 @@
 #? stdtmpl(subsChar = '$', metaChar = '#')
-#proc generateDailyIndexHtml(pages: seq[Page]): string =
+#proc generateXliesIndexHtml(pages: seq[Page], kind: XlyKind): string =
 #  result = ""
 
 <!DOCTYPE html>
@@ -19,20 +19,48 @@
     <meta property="og:description" content="momeemtのブログ">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://blog.momee.mt/assets/no-image.png">
-    <title>日報 | blog.momee.mt</title>
+    # if kind == xkDaily:
+      <title>日報 | blog.momee.mt</title>
+    # elif kind == xkWeekly:
+      <title>週報 | blog.momee.mt</title>
+    # else:
+      <title>月報 | blog.momee.mt</title>
+    # end if
   </head>
   <body>
     <div id="uniIndexRoot">
-      <h1 class="blog-name">blog.momee.mt/daily</h1>
-      <p class="blog-description">野菜ジュースでほんのり生活水準を上げている</p>
+      <h1 class="blog-name">
+        # if kind == xkDaily:
+          blog.momee.mt/daily
+        # elif kind == xkWeekly:
+          blog.momee.mt/weekly
+        # else:
+          blog.momee.mt/monthly
+        # end if
+      </h1>
+      <p class="blog-description">
+        # if kind == xkDaily:
+          野菜ジュースでほんのり生活水準を上げている
+        # elif kind == xkWeekly:
+          目標: 16時にお布団に入らない
+        # else:
+          10時くらいに朝ごはんを食べて昼ごはんを食べ逃し続ける
+        # end if
+      </p>
       <div class="new-article">
         <span style="background: #eee; padding: 0 20px; font-size: 18px;">
           <i class="fas fa-kiwi-bird" style="margin-right: 8px;"></i>
-          新しい日報
+          # if kind == xkDaily:
+            新しい日報
+          # elif kind == xkWeekly:
+            新しい週報
+          # elif kind == xkMonthly:
+            新しい月報
+          # end if
         </span>
       </div>
       <div>
-        <div class="dailyCards">
+        <div class="${kind}Cards">
         #for page in pages:
           <div class="articleCard">
             <a href="$page.href">
@@ -58,9 +86,24 @@
       <footer>
         <div>
           <a href="../index.html">記事一覧</a> | 
+          # if not (kind == xkDaily):
+            <a href="../daily/index.html">日報一覧</a> | 
+          # else:
+            <span>日報一覧</span> | 
+          # end if
+          # if not (kind == xkWeekly):
+            <a href="../weekly/index.html">週報一覧</a> | 
+          # else:
+            <span>週報一覧</span> | 
+          # end if
+          # if not (kind == xkMonthly):
+            <a href="../monthly/index.html">月報一覧</a> | 
+          # else:
+            <span>月報一覧</span> | 
+          # end if
           <a href="https://github.com/momeemt/blog.momee.mt" target="_blank">source</a>
         </div>
-        <small>&copy; 2022 Mutsuha Asada</small>
+        <small>&copy; 2023 Mutsuha Asada</small>
       </footer>
     </div>
     <script>

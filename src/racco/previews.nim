@@ -1,4 +1,5 @@
 import env
+import logs
 import builds
 
 import std/os
@@ -11,15 +12,14 @@ import std/asynchttpserver
 
 import nwatchdog
 
-proc listenAvoidsUsedPort (server: AsyncHttpServer, defaultPort: int) =
+proc listenAvoidsUsedPort (server: AsyncHttpServer, defaultPort: uint16) =
   var port = defaultPort
   while true:
     try:
       server.listen(Port(port))
       return
     except OSError:
-      let now = now().format("yyyy-MM-dd HH:mm:ss")
-      echo &"[{now}] 👮 Port {port} already in use"
+      msgPortAlreadyInUse(port)
       port += 1
 
 proc preview* (env: EnvKind = ekUser) =
@@ -46,8 +46,7 @@ proc preview* (env: EnvKind = ekUser) =
 
     var server = newAsyncHttpServer()
     server.listenAvoidsUsedPort(3000)
-    let now = now().format("yyyy-MM-dd HH:mm:ss")
-    echo &"[{now}] 🚀 Serve http://localhost:{$server.getPort.uint16}/index.html"
+    successServes("http://localhost", server.getPort.uint16)
     while true:
       if server.shouldAcceptRequest():
         await server.acceptRequest(cb)
@@ -64,6 +63,18 @@ proc preview* (env: EnvKind = ekUser) =
 
   wd.add(
     currentDir / "dailies",
+    r"[\w\W]*\.(\[\]|toml)",
+    callback,
+    "transpiled brack"
+  )
+  wd.add(
+    currentDir / "weeklies",
+    r"[\w\W]*\.(\[\]|toml)",
+    callback,
+    "transpiled brack"
+  )
+  wd.add(
+    currentDir / "monthlies",
     r"[\w\W]*\.(\[\]|toml)",
     callback,
     "transpiled brack"

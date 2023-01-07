@@ -67,10 +67,13 @@
       </div>
       <footer>
         <div>
+          <span>記事一覧</span> | 
           <a href="./daily/index.html">日報一覧</a> | 
+          <a href="./weekly/index.html">週報一覧</a> | 
+          <a href="./monthly/index.html">月報一覧</a> | 
           <a href="https://github.com/momeemt/blog.momee.mt" target="_blank">source</a>
         </div>
-        <small>&copy; 2022 Mutsuha Asada</small>
+        <small>&copy; 2023 Mutsuha Asada</small>
       </footer>
     </div>
     <script>
