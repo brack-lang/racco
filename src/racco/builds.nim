@@ -1,4 +1,5 @@
 import env
+import logs
 import racco
 
 import std/os
@@ -176,5 +177,4 @@ proc build* (env: EnvKind) =
       defer: outputFile.close()
       outputFile.write(generateXliesIndexHtml(xlies.sorted.reversed, kind))
 
-  let now = now().format("yyyy-MM-dd HH:mm:ss")
-  echo &"[{now}] 🎉 Success to build!"
+  successBuild()
