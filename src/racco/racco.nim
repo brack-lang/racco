@@ -35,3 +35,28 @@ brackModule(Html):
       controls="",
       width="100%"
     )
+
+  proc todo* (text: string): string {.square: "!".} =
+    result = htmlgen.li(
+      style="list-style: none; pointer-events: none;",
+      htmlgen.label(
+        htmlgen.input(
+          `type`="checkbox",
+          style="margin-right: 1em;",
+        ),
+        text
+      )
+    )
+  
+  proc done* (text: string): string {.square: "x".} =
+    result = htmlgen.li(
+      style="list-style: none; pointer-events: none;",
+      htmlgen.label(
+        htmlgen.input(
+          `type`="checkbox",
+          checked="true",
+          style="margin-right: 1em;",
+        ),
+        text
+      )
+    )
