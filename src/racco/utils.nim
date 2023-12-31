@@ -12,10 +12,10 @@ type
     tags: seq[string]
     published: bool
 
-func cmpPage (x, y: Page): int =
+proc cmpPage (x, y: Page): int =
   result = system.cmp(x.date, y.date)
 
-func sorted* (page: seq[Page]): seq[Page] =
+proc sorted* (page: seq[Page]): seq[Page] =
   result = page.sorted(cmpPage)
 
 iterator dateInDir* (path: string): tuple[dir: tuple[kind: PathComponent, path: string], year, month, day: string] =

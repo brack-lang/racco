@@ -32,7 +32,7 @@ include "../scfs/article.html.nimf"
 include "../scfs/xly_index.html.nimf"
 include "../scfs/xly.html.nimf"
 
-func toPlural (kind: XlyKind): string =
+proc toPlural (kind: XlyKind): string =
   result = ($kind)[0..^2]
   result.add "ies"
 
